@@ -1,14 +1,21 @@
 import pyqrcode
-from random import randrange
-from datetime import datetime
-from settings import FILE_NAME_DATE_FORMAT, FILE_NAME_RANDOM_END, FILE_NAME_RANDON_START
+import re
+from settings import FILE_NAME_PATTERN
 
-def generate_qr(url):
-    file_name = (
-        f"qr_{randrange(FILE_NAME_RANDON_START,FILE_NAME_RANDOM_END)}_"
-        f"{datetime.now().strftime(FILE_NAME_DATE_FORMAT)}.png"
-    )
-    qr_code = pyqrcode.create(url)
-    qr_code.png(file_name, scale=6)
+def generate_qr(urls):
+    if not isinstance(urls, list):
+        raise ValueError("Input must be a list of dictionaries")
 
+    qr_file_names = []
+    for entry in urls:
+        if "url" not in entry:
+            raise ValueError("Each entry must contain a 'url' key")
 
+        url = entry["url"]
+        cleaned_url = re.sub(FILE_NAME_PATTERN, "_", url)
+        file_name = cleaned_url + ".png"
+        qr_code = pyqrcode.create(url)
+        qr_code.png(file_name, scale=6)
+        qr_file_names.append(file_name)
+
+    return qr_file_names
